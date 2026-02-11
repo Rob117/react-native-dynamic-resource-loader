@@ -1,0 +1,74 @@
+#import "DynamicResourceLoader.h"
+#import <DynamicResourceLoader-Swift.h>
+
+@implementation DynamicResourceLoader {
+  DynamicResourceLoaderImpl *_impl;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _impl = [[DynamicResourceLoaderImpl alloc] init];
+  }
+  return self;
+}
+
+- (void)checkResourcesAvailable:(NSArray<NSString *> *)tags
+                        resolve:(RCTPromiseResolveBlock)resolve
+                         reject:(RCTPromiseRejectBlock)reject {
+  [_impl checkResourcesAvailable:tags
+                         resolve:^(BOOL available) {
+    resolve(@(available));
+  }
+                          reject:^(NSString *code, NSString *message, NSError *error) {
+    reject(code, message, error);
+  }];
+}
+
+- (void)downloadResources:(NSArray<NSString *> *)tags
+                  resolve:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject {
+  [_impl downloadResources:tags
+                   resolve:^(BOOL success) {
+    resolve(@(success));
+  }
+                    reject:^(NSString *code, NSString *message, NSError *error) {
+    reject(code, message, error);
+  }];
+}
+
+- (void)endAccessingResources:(NSArray<NSString *> *)tags {
+  [_impl endAccessingResources:tags];
+}
+
+- (void)getResourcePath:(NSString *)resourceName
+                 ofType:(NSString *)ofType
+                resolve:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject {
+  [_impl getResourcePath:resourceName
+                  ofType:ofType
+                 resolve:^(NSString *path) {
+    resolve(path);
+  }
+                  reject:^(NSString *code, NSString *message, NSError *error) {
+    reject(code, message, error);
+  }];
+}
+
+- (void)setPreservationPriority:(double)priority
+                           tags:(NSArray<NSString *> *)tags {
+  [_impl setPreservationPriority:priority forTags:tags];
+}
+
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<facebook::react::NativeDynamicResourceLoaderSpecJSI>(params);
+}
+
++ (NSString *)moduleName
+{
+  return @"DynamicResourceLoader";
+}
+
+@end
