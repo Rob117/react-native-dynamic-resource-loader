@@ -1,5 +1,5 @@
 #import <DynamicResourceLoaderSpec/DynamicResourceLoaderSpec.h>
 
-@interface DynamicResourceLoader : NSObject <NativeDynamicResourceLoaderSpec>
+@interface DynamicResourceLoader : NativeDynamicResourceLoaderSpecBase <NativeDynamicResourceLoaderSpec>
 
 @end

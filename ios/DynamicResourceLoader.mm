@@ -29,6 +29,15 @@
                   resolve:(RCTPromiseResolveBlock)resolve
                    reject:(RCTPromiseRejectBlock)reject {
   [_impl downloadResources:tags
+                  progress:^(NSString *tag, int64_t bytesDownloaded, int64_t totalBytes, double fractionCompleted, NSString *status) {
+    [self emitOnDownloadProgress:@{
+      @"tag": tag,
+      @"bytesDownloaded": @(bytesDownloaded),
+      @"totalBytes": @(totalBytes),
+      @"fractionCompleted": @(fractionCompleted),
+      @"status": status,
+    }];
+  }
                    resolve:^(BOOL success) {
     resolve(@(success));
   }

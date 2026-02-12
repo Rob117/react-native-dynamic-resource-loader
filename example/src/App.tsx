@@ -3,6 +3,8 @@ import { Text, Image, StyleSheet, ScrollView, Platform } from 'react-native';
 import {
   downloadResources,
   getResourcePath,
+  onDownloadProgress,
+  type DownloadProgressEvent,
 } from 'react-native-dynamic-resource-loader';
 
 const TAGS = ['kichilogo'];
@@ -10,8 +12,14 @@ const TAGS = ['kichilogo'];
 export default function App() {
   const [status, setStatus] = useState('Downloading...');
   const [imagePath, setImagePath] = useState<string | null>(null);
+  const [progress, setProgress] = useState<DownloadProgressEvent | null>(null);
 
   useEffect(() => {
+    const subscription = onDownloadProgress((event) => {
+      console.log('progress:', JSON.stringify(event));
+      setProgress(event);
+    });
+
     downloadResources(TAGS)
       .then(() => getResourcePath('kichi512', 'png'))
       .then((path) => {
@@ -23,12 +31,20 @@ export default function App() {
         console.log('downloadResources failed:', e.message);
         setStatus(`Failed: ${e.message}`);
       });
+
+    return () => subscription.remove();
   }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Dynamic Resource Loader</Text>
       <Text style={styles.platform}>Platform: {Platform.OS}</Text>
+      {progress && (
+        <Text style={styles.progress}>
+          {progress.tag}: {Math.round(progress.fractionCompleted * 100)}% (
+          {progress.status})
+        </Text>
+      )}
       <Text style={styles.status}>{status}</Text>
       {imagePath && (
         <Image source={{ uri: `file://${imagePath}` }} style={styles.image} />
@@ -52,6 +68,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginBottom: 20,
+  },
+  progress: {
+    fontSize: 14,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#007AFF',
+    marginBottom: 8,
   },
   status: {
     fontSize: 16,

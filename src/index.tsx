@@ -1,4 +1,7 @@
 import DynamicResourceLoader from './NativeDynamicResourceLoader';
+import type { DownloadProgressEvent } from './NativeDynamicResourceLoader';
+
+export type { DownloadProgressEvent };
 
 export function checkResourcesAvailable(
   tags: ReadonlyArray<string>
@@ -28,4 +31,10 @@ export function setPreservationPriority(
   tags: ReadonlyArray<string>
 ): void {
   DynamicResourceLoader.setPreservationPriority(priority, tags);
+}
+
+export function onDownloadProgress(
+  handler: (event: DownloadProgressEvent) => void
+) {
+  return DynamicResourceLoader.onDownloadProgress(handler);
 }

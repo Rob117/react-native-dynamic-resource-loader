@@ -1,5 +1,6 @@
 package com.dynamicresourceloader
 
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
@@ -16,6 +17,16 @@ class DynamicResourceLoaderModule(reactContext: ReactApplicationContext) :
 
   private val assetPackManager: AssetPackManager =
     AssetPackManagerFactory.getInstance(reactContext)
+
+  private fun emitProgress(tag: String, bytesDownloaded: Long, totalBytes: Long, fraction: Double, status: String) {
+    emitOnDownloadProgress(Arguments.createMap().apply {
+      putString("tag", tag)
+      putDouble("bytesDownloaded", bytesDownloaded.toDouble())
+      putDouble("totalBytes", totalBytes.toDouble())
+      putDouble("fractionCompleted", fraction)
+      putString("status", status)
+    })
+  }
 
   private fun ReadableArray.toStringList(): List<String> {
     val list = mutableListOf<String>()
@@ -48,6 +59,9 @@ class DynamicResourceLoaderModule(reactContext: ReactApplicationContext) :
           states.packStates()[name]?.status() == AssetPackStatus.COMPLETED
         }
         if (allCompleted) {
+          for (name in packNames) {
+            emitProgress(name, 1, 1, 1.0, "completed")
+          }
           promise.resolve(true)
           return@addOnSuccessListener
         }
@@ -62,8 +76,19 @@ class DynamicResourceLoaderModule(reactContext: ReactApplicationContext) :
             if (settled) return
 
             val name = state.name()
+            val bytesDownloaded = state.bytesDownloaded()
+            val totalBytes = state.totalBytesToDownload()
+            val fraction = if (totalBytes > 0) bytesDownloaded.toDouble() / totalBytes.toDouble() else 0.0
+
             when (state.status()) {
+              AssetPackStatus.DOWNLOADING, AssetPackStatus.TRANSFERRING -> {
+                emitProgress(name, bytesDownloaded, totalBytes, fraction, "downloading")
+              }
+              AssetPackStatus.WAITING_FOR_WIFI -> {
+                emitProgress(name, bytesDownloaded, totalBytes, fraction, "waiting")
+              }
               AssetPackStatus.COMPLETED -> {
+                emitProgress(name, totalBytes, totalBytes, 1.0, "completed")
                 pending.remove(name)
                 if (pending.isEmpty()) {
                   settled = true
@@ -72,6 +97,7 @@ class DynamicResourceLoaderModule(reactContext: ReactApplicationContext) :
                 }
               }
               AssetPackStatus.FAILED -> {
+                emitProgress(name, bytesDownloaded, totalBytes, fraction, "failed")
                 settled = true
                 assetPackManager.unregisterListener(this)
                 promise.reject(

@@ -3,6 +3,7 @@ import Foundation
 @objcMembers
 public class DynamicResourceLoaderImpl: NSObject {
   private var activeRequests: [String: NSBundleResourceRequest] = [:]
+  private var progressObservations: [String: NSKeyValueObservation] = [:]
 
   private func requestKey(for tags: [String]) -> String {
     return tags.sorted().joined(separator: ",")
@@ -26,6 +27,7 @@ public class DynamicResourceLoaderImpl: NSObject {
 
   public func downloadResources(
     _ tags: [String],
+    progress progressCallback: ((String, Int64, Int64, Double, String) -> Void)?,
     resolve: @escaping (Bool) -> Void,
     reject: @escaping (String, String, NSError) -> Void
   ) {
@@ -36,16 +38,41 @@ public class DynamicResourceLoaderImpl: NSObject {
     request.conditionallyBeginAccessingResources { [weak self] available in
       if available {
         self?.activeRequests[key] = request
+        for tag in tags {
+          progressCallback?(tag, 1, 1, 1.0, "completed")
+        }
         resolve(true)
         return
       }
 
+      if let progressCallback = progressCallback {
+        let observation = request.progress.observe(\.fractionCompleted) { progress, _ in
+          for tag in tags {
+            progressCallback(
+              tag,
+              progress.completedUnitCount,
+              progress.totalUnitCount,
+              progress.fractionCompleted,
+              "downloading"
+            )
+          }
+        }
+        self?.progressObservations[key] = observation
+      }
+
       request.beginAccessingResources { [weak self] error in
+        self?.progressObservations.removeValue(forKey: key)
         if let error = error as NSError? {
+          for tag in tags {
+            progressCallback?(tag, 0, 0, 0.0, "failed")
+          }
           reject("DOWNLOAD_FAILED", error.localizedDescription, error)
           return
         }
         self?.activeRequests[key] = request
+        for tag in tags {
+          progressCallback?(tag, 1, 1, 1.0, "completed")
+        }
         resolve(true)
       }
     }
