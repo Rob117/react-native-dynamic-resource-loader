@@ -1,3 +1,4 @@
+import { DeviceEventEmitter } from 'react-native';
 import DynamicResourceLoader from './NativeDynamicResourceLoader';
 import type { DownloadProgressEvent } from './NativeDynamicResourceLoader';
 
@@ -35,6 +36,14 @@ export function setPreservationPriority(
 
 export function onDownloadProgress(
   handler: (event: DownloadProgressEvent) => void
-) {
-  return DynamicResourceLoader.onDownloadProgress(handler);
+): () => void {
+  if (typeof DynamicResourceLoader.onDownloadProgress === 'function') {
+    const sub = DynamicResourceLoader.onDownloadProgress(handler);
+    return () => sub.remove();
+  }
+  const subscription = DeviceEventEmitter.addListener(
+    'onDownloadProgress',
+    handler
+  );
+  return () => subscription.remove();
 }

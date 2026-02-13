@@ -32,7 +32,7 @@ export default function App() {
         setStatus(`Failed: ${e.message}`);
       });
 
-    return () => subscription.remove();
+    return subscription;
   }, []);
 
   return (

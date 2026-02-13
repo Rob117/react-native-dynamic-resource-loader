@@ -1,4 +1,8 @@
-import { TurboModuleRegistry, type TurboModule } from 'react-native';
+import {
+  TurboModuleRegistry,
+  NativeModules,
+  type TurboModule,
+} from 'react-native';
 import type { EventEmitter } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type DownloadProgressEvent = {
@@ -18,4 +22,5 @@ export interface Spec extends TurboModule {
   readonly onDownloadProgress: EventEmitter<DownloadProgressEvent>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('DynamicResourceLoader');
+export default (TurboModuleRegistry.get<Spec>('DynamicResourceLoader') ??
+  NativeModules.DynamicResourceLoader) as Spec;

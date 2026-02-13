@@ -47,14 +47,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Rob117//react-native-dynamic-resource-loader.git"
+    "url": "git+https://github.com/Rob117/react-native-dynamic-resource-loader.git"
   },
   "author": "Robert Sherling <5183016+Rob117@users.noreply.github.com> (https://github.com/Rob117/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Rob117//react-native-dynamic-resource-loader/issues"
+    "url": "https://github.com/Rob117/react-native-dynamic-resource-loader/issues"
   },
-  "homepage": "https://github.com/Rob117//react-native-dynamic-resource-loader#readme",
+  "homepage": "https://github.com/Rob117/react-native-dynamic-resource-loader#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
