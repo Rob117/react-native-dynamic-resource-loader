@@ -1,5 +1,9 @@
 #import "DynamicResourceLoader.h"
-#import <DynamicResourceLoader-Swift.h>
+#if __has_include("DynamicResourceLoader-Swift.h")
+  #import "DynamicResourceLoader-Swift.h"
+#else
+  #import <DynamicResourceLoader/DynamicResourceLoader-Swift.h>
+#endif
 
 @implementation DynamicResourceLoader {
   DynamicResourceLoaderImpl *_impl;
