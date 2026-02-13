@@ -1,6 +1,6 @@
 {
   "name": "react-native-dynamic-resource-loader",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Load dynamic files from the App and Play stores",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
